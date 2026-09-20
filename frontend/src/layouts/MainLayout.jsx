@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Receipt, TrendingUp, Target, Repeat, Lightbulb, User, LogOut, Wallet } from 'lucide-react';
+import { LayoutDashboard, Receipt, TrendingUp, Target, Repeat, Lightbulb, User, LogOut, Wallet, Menu, X } from 'lucide-react';
 
 const MainLayout = () => {
   const { user, logout, loading } = useAuth();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -25,6 +26,8 @@ const MainLayout = () => {
     { name: 'Analytics', path: '/analytics', icon: TrendingUp },
     { name: 'Insights', path: '/insights', icon: Lightbulb },
   ];
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <div className="flex h-screen font-sans bg-transparent">
@@ -80,11 +83,79 @@ const MainLayout = () => {
         </div>
       </aside>
 
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+          onClick={closeMobileMenu}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <aside 
+        className={`fixed top-0 left-0 bottom-0 w-64 glass z-50 transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="h-20 flex items-center justify-between px-6 border-b border-white/20">
+          <div className="flex items-center">
+            <div className="bg-white/20 p-2 rounded-xl mr-3 shadow-sm border border-white/30 backdrop-blur-sm">
+              <Wallet className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-lg font-bold text-white tracking-wide">SmartExpense</span>
+          </div>
+          <button onClick={closeMobileMenu} className="text-gray-300 hover:text-white p-1">
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <nav className="flex-1 overflow-y-auto py-6">
+          <ul className="space-y-2 px-4">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              return (
+                <li key={item.name}>
+                  <Link
+                    to={item.path}
+                    onClick={closeMobileMenu}
+                    className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 ${
+                      isActive 
+                        ? 'bg-white/20 text-white shadow-sm border border-white/30 backdrop-blur-md' 
+                        : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                    {item.name}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="border-t border-white/20 p-5 bg-white/5">
+          <button
+            onClick={logout}
+            className="flex w-full items-center px-4 py-2.5 text-sm font-medium text-pink-400 rounded-xl hover:bg-white/10 transition-colors border border-transparent hover:border-white/20"
+          >
+            <LogOut className="mr-3 h-5 w-5" />
+            Logout
+          </button>
+        </div>
+      </aside>
+
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden m-4 ml-0">
+      <main className="flex-1 flex flex-col overflow-hidden m-4 md:ml-0">
         {/* Mobile Header */}
         <header className="md:hidden h-16 glass rounded-2xl mb-4 flex items-center justify-between px-4">
           <div className="flex items-center">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="text-gray-300 hover:text-white mr-3 bg-white/10 border border-white/20 p-2 rounded-lg"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
             <Wallet className="h-6 w-6 text-white mr-2" />
             <span className="text-lg font-bold text-white">SmartExpense</span>
           </div>
